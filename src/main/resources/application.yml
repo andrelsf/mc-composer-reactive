@@ -1,0 +1,50 @@
+server:
+  port: ${SERVER_PORT:8090}
+  shutdown: graceful
+  undertow:
+    threads:
+      io: ${UNDERTOW_IO_THREADS:10}
+      worker: ${UNDERTOW_IO_WORKERS:100}
+  servlet:
+    context-path: /api
+
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: mc-composer-reactive
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "info,health,circuitbreakers"
+  health:
+    circuitbreakers:
+      enabled: true
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      registerHealthIndicator: true
+      sliding-window-size: 6
+      minimum-number-of-calls: 3
+  instances:
+    assessmentsByProductIdCircuitBreaker:
+      baseConfig: default
+
+multicode:
+  apis:
+    urlMcProducts: "http://localhost:8091"
+    urlMcAssessments: "http://localhost:8092"
+
+logging:
+  level:
+    root: ${LOGGING_LEVEL_ROOT:INFO}
+  pattern:
+    console: "[%thread][%highlight(%-5level)][%cyan(%d{yyyy-MM-dd HH:mm:ss})][%yellow(%X{requestId})][%magenta(%logger{40})] - %message%n"
