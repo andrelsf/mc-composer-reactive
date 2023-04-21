@@ -1,10 +1,6 @@
 server:
   port: ${SERVER_PORT:8090}
   shutdown: graceful
-  undertow:
-    threads:
-      io: ${UNDERTOW_IO_THREADS:10}
-      worker: ${UNDERTOW_IO_WORKERS:100}
   servlet:
     context-path: /api
 
