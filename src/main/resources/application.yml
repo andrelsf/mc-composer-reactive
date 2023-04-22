@@ -1,12 +1,12 @@
 server:
   port: ${SERVER_PORT:8090}
   shutdown: graceful
-  servlet:
-    context-path: /api
 
 spring:
   main:
     banner-mode: off
+  webflux:
+    base-path: /api/v1
   application:
     name: mc-composer-reactive
   profiles:
@@ -25,14 +25,13 @@ management:
       enabled: true
 
 resilience4j.circuitbreaker:
-  configs:
-    default:
-      registerHealthIndicator: true
-      sliding-window-size: 6
-      minimum-number-of-calls: 3
   instances:
-    assessmentsByProductIdCircuitBreaker:
-      baseConfig: default
+    assessments-client:
+      register-health-indicator: true
+      minimum-number-of-calls: 3
+      sliding-window-type: TIME_BASED
+      sliding-window-size: 6
+      permitted-number-of-calls-in-half-open-state: 3
 
 multicode:
   apis:

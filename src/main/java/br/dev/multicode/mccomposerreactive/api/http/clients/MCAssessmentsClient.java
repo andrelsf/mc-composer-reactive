@@ -1,11 +1,12 @@
 package br.dev.multicode.mccomposerreactive.api.http.clients;
 
 import br.dev.multicode.mccomposerreactive.api.http.responses.AssessmentResponse;
-
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,6 +26,7 @@ public class MCAssessmentsClient {
   }
 
   private final WebClient apiMcAssessments;
+  private final ReactiveCircuitBreakerFactory reactiveCircuitBreakerFactory;
 
   public Mono<List<AssessmentResponse>> getAssessmentsByProductIdFlux(@NonNull final String productId) {
     return apiMcAssessments.get()
@@ -33,6 +35,10 @@ public class MCAssessmentsClient {
         .bodyToFlux(AssessmentResponse.class)
         .doOnError(ex -> log.error(ERROR_MESSAGE, ex.getMessage()))
         .collectList()
+        .transform(it -> {
+          ReactiveCircuitBreaker rcb = reactiveCircuitBreakerFactory.create("assessments-client");
+          return rcb.run(it, this::getAssessmentsByProductIdFallback);
+        })
         .log();
   }
 
